@@ -1,0 +1,289 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atharv Dubey's CV / Profile Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode {
+            background-color: #222;
+            color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+        body.dark-mode .container {
+            background: #333;
+        }
+        .profile-img {
+            max-width: 150px;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+            animation: slideIn 0.5s ease-out;
+        }
+        body.dark-mode h1, body.dark-mode h2 {
+            color: #ddd;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .greeting {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        body.dark-mode .greeting {
+            color: #bbb;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .skills-list, .courses-list {
+            max-height: 100px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .skills-list.expanded, .courses-list.expanded {
+            max-height: none;
+        }
+        .read-more {
+            color: #007BFF;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        body.dark-mode .read-more {
+            color: #4da8ff;
+        }
+        .edit-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .edit-btn:hover {
+            background-color: #218838;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #007BFF;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .theme-toggle:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            padding: 5px 0;
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        body.dark-mode a {
+            color: #4da8ff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
+    <div class="container">
+        <div id="greeting" class="greeting"></div>
+        <img src="https://raw.githubusercontent.com/Atharv-Dubey/ACA253/main/Assignment1/Photo-compressed.jpeg" alt="Atharv Dubey's Profile Picture" class="profile-img">
+        <h1>Atharv Dubey</h1>
+        <div class="section">
+            <h2>About Me</h2>
+            <p>I am Atharv Dubey, I am a student at IIT Kanpur pursuing my bachelors in economics. I am currently learning web-development.</p>
+        </div>
+        <div class="section">
+            <h2>Hobbies</h2>
+            <ul>
+                <li>Watching movies</li>
+                <li>Cooking</li>
+                <li>Following international politics</li>
+            </ul>
+        </div>
+        <div class="section">
+            <h2>Projects</h2>
+            <ul>
+                <li><strong>ACA 253</strong>: About Web Development</li>
+                <li><strong>Lord Of the Chain - PClub</strong>: Intro to Web 3</li>
+                <li><strong>FinOptix</strong>: Algorithmic Trading</li>
+            </ul>
+        </div>
+        <div class="section">
+            <h2>Contact</h2>
+            <p>Email: <a href="mailto:atharvdiitk@gmail.com">atharvdiitk@gmail.com</a></p>
+            <p>LinkedIn: <a href="https://linkedin.com/in/atharv-dubey" target="_blank">linkedin.com/in/atharv-dubey</a></p>
+            <p>GitHub: <a href="https://github.com/Atharv-Dubey" target="_blank">github.com/Atharv-Dubey</a></p>
+        </div>
+        <div class="section">
+            <h2>Skills</h2>
+            <ul id="skillsList" class="skills-list">
+                <li>HTML</li>
+                <li>CSS</li>
+                <li>JavaScript</li>
+                <li>Python</li>
+                <li>Economics</li>
+                <li>Data Analysis</li>
+            </ul>
+            <span class="read-more" onclick="toggleReadMore('skillsList')">Read More</span>
+            <button class="edit-btn" onclick="editSkills()">Edit Skills</button>
+        </div>
+        <div class="section">
+            <h2>Courses</h2>
+            <ul id="coursesList" class="courses-list">
+                <li>ESC111/112 - Fundamental of Computing</li>
+                <li>MTH111 - Real Analysis</li>
+                <li>MTH113 - Linear Algebra</li>
+                <li>TA111 - Engineering Drawing</li>
+            </ul>
+            <span class="read-more" onclick="toggleReadMore('coursesList')">Read More</span>
+            <button class="edit-btn" onclick="editCourses()">Edit Courses</button>
+        </div>
+    </div>
+
+    <script>
+        const greetings = [
+            "Welcome to my profile!",
+            "Thanks for visiting my CV!",
+            "Explore my skills and projects!"
+        ];
+        function displayGreeting() {
+            const randomIndex = Math.floor(Math.random() * greetings.length);
+            document.getElementById('greeting').textContent = greetings[randomIndex];
+        }
+        window.onload = displayGreeting;
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const button = document.querySelector('.theme-toggle');
+            button.textContent = document.body.classList.contains('dark-mode') ? 'Toggle Light Mode' : 'Toggle Dark Mode';
+        }
+
+        function toggleReadMore(listId) {
+            const list = document.getElementById(listId);
+            const readMore = list.nextElementSibling;
+            if (list.classList.contains('expanded')) {
+                list.classList.remove('expanded');
+                readMore.textContent = 'Read More';
+            } else {
+                list.classList.add('expanded');
+                readMore.textContent = 'Show Less';
+            }
+        }
+
+        function editSkills() {
+            const skillsList = document.getElementById('skillsList');
+            const currentSkills = Array.from(skillsList.children).map(li => li.textContent).join(', ');
+            const newSkills = prompt('Enter your skills (comma-separated):', currentSkills);
+            if (newSkills === null || newSkills.trim() === '') {
+                alert('No changes made. Please enter valid skills.');
+                return;
+            }
+            const skillsArray = newSkills.split(',').map(skill => skill.trim()).filter(skill => skill !== '');
+            if (skillsArray.length === 0) {
+                alert('Please enter at least one valid skill.');
+                return;
+            }
+            skillsList.innerHTML = skillsArray.map(skill => `<li>${skill}</li>`).join('');
+        }
+
+        function editCourses() {
+            const coursesList = document.getElementById('coursesList');
+            const currentCourses = Array.from(coursesList.children).map(li => li.textContent).join(', ');
+            const newCourses = prompt('Enter your courses (comma-separated):', currentCourses);
+            if (newCourses === null || newCourses.trim() === '') {
+                alert('No changes made. Please enter valid courses.');
+                return;
+            }
+            const coursesArray = newCourses.split(',').map(course => course.trim()).filter(course => course !== '');
+            if (coursesArray.length === 0) {
+                alert('Please enter at least one valid course.');
+                return;
+            }
+            coursesList.innerHTML = coursesArray.map(course => `<li>${course}</li>`).join('');
+        }
+    </script>
+</body>
+</html>
